@@ -1,5 +1,5 @@
 ## Dependencies
 
 ```bash
-sudo pacman -S sdl2 sdl2_ttf
+sudo pacman -S cmake sdl2 sdl2_ttf
 ```

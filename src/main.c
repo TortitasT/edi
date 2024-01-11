@@ -12,12 +12,51 @@
 
 #define FONT_PATH "assets/fonts/GoMonoNerdFont-Regular.ttf"
 
+char *buffer = "a";
+
 int shutdown() {
-  // Quit SDL2_ttf
   TTF_Quit();
-  // Quit SDL
   SDL_Quit();
   return 0;
+}
+
+int render_text(SDL_Renderer *renderer, TTF_Font *font, const char *wantedText,
+                SDL_Rect *returnTextRect, SDL_Texture **returnTextTexture) {
+  SDL_Color textColor = {0x00, 0x00, 0x00, 0xFF};
+  SDL_Color textBackgroundColor = {0xFF, 0xFF, 0xFF, 0xFF};
+  SDL_Texture *text = NULL;
+  SDL_Rect textRect;
+
+  SDL_Surface *textSurface =
+      TTF_RenderText_Shaded(font, wantedText, textColor, textBackgroundColor);
+  if (!textSurface) {
+    printf("Unable to render text surface!\n"
+           "SDL2_ttf Error: %s\n",
+           TTF_GetError());
+    return 0;
+  }
+
+  text = SDL_CreateTextureFromSurface(renderer, textSurface);
+  if (!text) {
+    printf("Unable to create texture from rendered text!\n"
+           "SDL2 Error: %s\n",
+           SDL_GetError());
+    return 0;
+  }
+
+  // Get text dimensions
+  textRect.w = textSurface->w;
+  textRect.h = textSurface->h;
+
+  SDL_FreeSurface(textSurface);
+
+  textRect.x = (SCREEN_WIDTH - textRect.w) / 2;
+  textRect.y = (SCREEN_HEIGHT - textRect.h) / 2;
+
+  *returnTextRect = textRect;
+  *returnTextTexture = text;
+
+  return 1;
 }
 
 int main(int argc, char *argv[]) {
@@ -58,16 +97,6 @@ int main(int argc, char *argv[]) {
            SDL_GetError());
     return shutdown();
   }
-  // Declare rect of square
-  SDL_Rect squareRect;
-
-  // Square dimensions: Half of the min(SCREEN_WIDTH, SCREEN_HEIGHT)
-  squareRect.w = MIN(SCREEN_WIDTH, SCREEN_HEIGHT) / 2;
-  squareRect.h = MIN(SCREEN_WIDTH, SCREEN_HEIGHT) / 2;
-
-  // Square position: In the middle of the screen
-  squareRect.x = SCREEN_WIDTH / 2 - squareRect.w / 2;
-  squareRect.y = SCREEN_HEIGHT / 2 - squareRect.h / 2;
 
   TTF_Font *font = TTF_OpenFont(FONT_PATH, 40);
   if (!font) {
@@ -77,68 +106,87 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  SDL_Color textColor = {0x00, 0x00, 0x00, 0xFF};
-  SDL_Color textBackgroundColor = {0xFF, 0xFF, 0xFF, 0xFF};
-  SDL_Texture *text = NULL;
-  SDL_Rect textRect;
-
-  SDL_Surface *textSurface =
-      TTF_RenderText_Shaded(font, "Red square", textColor, textBackgroundColor);
-  if (!textSurface) {
-    printf("Unable to render text surface!\n"
-           "SDL2_ttf Error: %s\n",
-           TTF_GetError());
-  } else {
-    // Create texture from surface pixels
-    text = SDL_CreateTextureFromSurface(renderer, textSurface);
-    if (!text) {
-      printf("Unable to create texture from rendered text!\n"
-             "SDL2 Error: %s\n",
-             SDL_GetError());
-      return 0;
-    }
-
-    // Get text dimensions
-    textRect.w = textSurface->w;
-    textRect.h = textSurface->h;
-
-    SDL_FreeSurface(textSurface);
-  }
-
-  textRect.x = (SCREEN_WIDTH - textRect.w) / 2;
-  textRect.y = squareRect.y - textRect.h - 10;
-
   // Event loop exit flag
   bool quit = false;
 
   // Event loop
   while (!quit) {
     SDL_Event e;
-
-    // Wait indefinitely for the next available event
     SDL_WaitEvent(&e);
 
-    // User requests quit
-    if (e.type == SDL_QUIT) {
+    SDL_KeyboardEvent *key = NULL;
+
+    switch (e.type) {
+    case SDL_KEYDOWN:
+      key = &e.key;
+      break;
+
+    case SDL_KEYUP:
+      printf("Key release detected\n");
+      break;
+
+    case SDL_QUIT:
       quit = true;
+      break;
+
+    default:
+      break;
     }
 
-    // Initialize renderer color white for the background
+    if (key) {
+      switch (key->keysym.sym) {
+      case SDLK_ESCAPE:
+        quit = true;
+        break;
+      default:
+        if (key->keysym.sym == SDLK_BACKSPACE) {
+          // with malloc
+          int len = strlen(buffer);
+          if (len > 0) {
+            char *new_buffer = malloc(len);
+            strncpy(new_buffer, buffer, len - 1);
+            new_buffer[len - 1] = '\0';
+            buffer = new_buffer;
+          }
+        } else {
+          const char *key_string = SDL_GetKeyName(key->keysym.sym);
+          int len = strlen(buffer);
+          char *new_buffer = malloc(len + 1);
+          strncpy(new_buffer, buffer, len);
+          new_buffer[len] = key_string[0];
+          new_buffer[len + 1] = '\0';
+          buffer = new_buffer;
+        }
+        break;
+      }
+    }
+
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-    // Clear screen
     SDL_RenderClear(renderer);
 
-    // Set renderer color red to draw the square
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
+    // if (key) {
+    //   if (key->keysym.sym == SDLK_BACKSPACE) {
+    //     int len = strlen(buffer);
+    //     if (len > 0) {
+    //       buffer[len - 1] = '\0';
+    //     }
+    //   } else {
+    //     const char *key_string = SDL_GetKeyName(key->keysym.sym);
+    //     int len = strlen(buffer);
+    //     buffer[len] = key_string[0];
+    //     buffer[len + 1] = '\0';
+    //   }
+    // }
+    if (buffer[0] != '\0') {
+      SDL_Rect textRect;
+      SDL_Texture *text;
+      render_text(renderer, font, buffer, &textRect, &text);
 
-    // Draw filled square
-    SDL_RenderFillRect(renderer, &squareRect);
+      SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
+      SDL_RenderCopy(renderer, text, NULL, &textRect);
+    }
 
-    // Draw text
-    SDL_RenderCopy(renderer, text, NULL, &textRect);
-
-    // Update screen
     SDL_RenderPresent(renderer);
   }
 

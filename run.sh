@@ -1,5 +1,7 @@
 #!/bin/bash
+# cmake --build build -- -DCMAKE_EXPORT_COMPILE_COMMANDS=1 &&
 
-cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .
-make
-./edi
+mkdir -p build &&
+cmake -B./build -S./ &&
+cmake --build ./build &&
+./build/edi

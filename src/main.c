@@ -1,5 +1,7 @@
 #include <stdlib.h>
 
+#include "utils.h"
+
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <ctype.h>
@@ -9,13 +11,12 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-#include "utils.h"
-
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
+#define CHAR_HEIGHT 20
 
 #define FONT_PATH "assets/fonts/GoMonoNerdFont-Regular.ttf"
 
@@ -77,14 +78,13 @@ int Render_Text(SDL_Renderer *renderer, TTF_Font *font,
   char *current_line = "\0";
   char current_character;
 
-  for (int i = 0; i < strlen(wantedText) + 1; i++) {
-    printf("%s\n", current_line);
+  for (int i = 0; (unsigned)i < strlen(wantedText) + 1; i++) {
     current_character = wantedText[i];
 
     if (current_character == '\n') {
       if (strlen(current_line) > 0) {
         Render_Paragraph(renderer, font, current_line, textColor,
-                         textBackgroundColor, 0, line_number * 40);
+                         textBackgroundColor, 0, line_number * CHAR_HEIGHT);
       }
 
       current_line = "";
@@ -93,7 +93,7 @@ int Render_Text(SDL_Renderer *renderer, TTF_Font *font,
       String_Push_Char(&current_line, current_character);
     } else if (strlen(current_line) > 0) {
       Render_Paragraph(renderer, font, current_line, textColor,
-                       textBackgroundColor, 0, line_number * 40);
+                       textBackgroundColor, 0, line_number * CHAR_HEIGHT);
     }
   }
 
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
     Panic(1, "Renderer could not be created!\nSDL_Error: %s\n", SDL_GetError());
   }
 
-  TTF_Font *font = TTF_OpenFont(FONT_PATH, 40);
+  TTF_Font *font = TTF_OpenFont(FONT_PATH, CHAR_HEIGHT);
   if (!font) {
     Panic(1, "Unable to load font: '%s'!\nTTF_Error: %s\n", FONT_PATH,
           TTF_GetError());

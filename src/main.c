@@ -6,6 +6,7 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <stdlib.h>
 
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
@@ -29,13 +30,28 @@ void panic(int status, const char *format_message, ...) {
   exit(status);
 }
 
+void String_Push_Char(char **str, char concat) {
+  //                                             1 for the \0 and 1 for the new
+  //                                             char
+  char *new_str = (char *)malloc((strlen(*str) + 2) * sizeof(char));
+
+  strcpy(new_str, *str);
+
+  new_str[strlen(*str)] = concat;
+  new_str[strlen(*str) + 1] = '\0';
+
+  *str = new_str;
+}
+
 void type_in_buffer(char key) {
-  int len = strlen(buffer);
-  char *new_buffer = malloc(len + 1);
-  strncpy(new_buffer, buffer, len);
-  new_buffer[len] = key;
-  new_buffer[len + 1] = '\0';
-  buffer = new_buffer;
+  // int len = strlen(buffer);
+  // char *new_buffer = malloc(len + 1);
+  // strncpy(new_buffer, buffer, len);
+  // new_buffer[len] = key;
+  // new_buffer[len + 1] = '\0';
+  // buffer = new_buffer;
+
+  String_Push_Char(&buffer, key);
 }
 
 int subrender_text(SDL_Renderer *renderer, TTF_Font *font,
@@ -76,48 +92,71 @@ int render_text(SDL_Renderer *renderer, TTF_Font *font,
   SDL_Color textColor = {0x00, 0x00, 0x00, 0xFF};
   SDL_Color textBackgroundColor = {0xFF, 0xFF, 0xFF, 0xFF};
 
-  // subrender_text(renderer, font, wantedText, textColor, textBackgroundColor,
-  // 0, 0);
-
-  char *line = malloc(strlen(wantedText));
   int line_number = 0;
+  char *current_line = "\0";
+  char current_character;
 
-  for (int i = 0; i < strlen(wantedText); i++) {
-    printf("%s\n", line);
+  for (int i = 0; i < strlen(wantedText) + 1; i++) {
+    printf("%s\n", current_line);
+    current_character = wantedText[i];
 
-    if (wantedText[i] == '\0') {
-      subrender_text(renderer, font, line, textColor, textBackgroundColor, 0,
-                     line_number * 40);
-    } else {
-      printf("adding %c\n", wantedText[i]);
-      // int len = strlen(line);
-      // char *new_line = malloc(len + 1);
-      // strncpy(new_line, line, len);
-      // new_line[len] = wantedText[i];
-      // new_line[len + 1] = '\0';
-      // line = new_line;
+    if (current_character == '\n') {
+      if (strlen(current_line) > 0) {
+        subrender_text(renderer, font, current_line, textColor,
+                       textBackgroundColor, 0, line_number * 40);
+      }
+
+      current_line = "";
+      line_number++;
+    } else if (current_character != '\0') {
+      String_Push_Char(&current_line, current_character);
+    } else if (strlen(current_line) > 0) {
+      subrender_text(renderer, font, current_line, textColor,
+                     textBackgroundColor, 0, line_number * 40);
     }
-
-    // if (wantedText[i] != '\n' && wantedText[i] != '\0') {
-    //   int len = strlen(line);
-    //   char *new_line = malloc(len + 1);
-    //   strncpy(new_line, line, len);
-    //   new_line[len] = wantedText[i];
-    //   new_line[len + 1] = '\0';
-    //   line = new_line;
-    // } else if (wantedText[i] == '\n') {
-    //   line = malloc(strlen(wantedText));
-    //   line_number++;
-    //
-    //   subrender_text(renderer, font, line, textColor, textBackgroundColor, 0,
-    //                  line_number * 40);
-    // } else if (wantedText[i] == '\0') {
-    //   subrender_text(renderer, font, line, textColor, textBackgroundColor, 0,
-    //                  line_number * 40);
-    // }
   }
 
-  free(line);
+  // char *line = malloc(strlen(wantedText));
+  // int line_number = 0;
+  //
+  // for (int i = 0; i < strlen(wantedText); i++) {
+  //   printf("%s\n", line);
+  //
+  //   if (wantedText[i] == '\0') {
+  //     subrender_text(renderer, font, line, textColor, textBackgroundColor, 0,
+  //                    line_number * 40);
+  //   } else {
+  //     printf("adding %c\n", wantedText[i]);
+  //     // int len = strlen(line);
+  //     // char *new_line = malloc(len + 1);
+  //     // strncpy(new_line, line, len);
+  //     // new_line[len] = wantedText[i];
+  //     // new_line[len + 1] = '\0';
+  //     // line = new_line;
+  //   }
+  //
+  //   // if (wantedText[i] != '\n' && wantedText[i] != '\0') {
+  //   //   int len = strlen(line);
+  //   //   char *new_line = malloc(len + 1);
+  //   //   strncpy(new_line, line, len);
+  //   //   new_line[len] = wantedText[i];
+  //   //   new_line[len + 1] = '\0';
+  //   //   line = new_line;
+  //   // } else if (wantedText[i] == '\n') {
+  //   //   line = malloc(strlen(wantedText));
+  //   //   line_number++;
+  //   //
+  //   //   subrender_text(renderer, font, line, textColor, textBackgroundColor,
+  //   0,
+  //   //                  line_number * 40);
+  //   // } else if (wantedText[i] == '\0') {
+  //   //   subrender_text(renderer, font, line, textColor, textBackgroundColor,
+  //   0,
+  //   //                  line_number * 40);
+  //   // }
+  // }
+  //
+  // free(line);
   return 1;
 }
 
@@ -202,9 +241,10 @@ int main(int argc, char *argv[]) {
         }
         break;
       }
-      case SDLK_RETURN:
+      case SDLK_RETURN: {
         type_in_buffer('\n');
         break;
+      }
       default: {
         break;
       }

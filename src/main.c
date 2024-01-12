@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <ctype.h>
@@ -6,7 +8,6 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include <stdlib.h>
 
 #include "utils.h"
 

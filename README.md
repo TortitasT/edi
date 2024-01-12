@@ -22,6 +22,7 @@
 sudo pacman -S cmake sdl2 sdl2_ttf
 ```
 
-## Inspiration
+## Resources
 
 - https://github.com/aminosbh/sdl2-ttf-sample
+- https://cmake.org/cmake/help/v3.16/guide/tutorial/index.html

@@ -8,6 +8,8 @@
 #include <SDL_ttf.h>
 #include <stdlib.h>
 
+#include "utils.h"
+
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 
@@ -28,19 +30,6 @@ void Panic(int status, const char *format_message, ...) {
   SDL_Quit();
 
   exit(status);
-}
-
-void String_Push_Char(char **str, char concat) {
-  //                                             1 for the \0 and 1 for the new
-  //                                             char
-  char *new_str = (char *)malloc((strlen(*str) + 2) * sizeof(char));
-
-  strcpy(new_str, *str);
-
-  new_str[strlen(*str)] = concat;
-  new_str[strlen(*str) + 1] = '\0';
-
-  *str = new_str;
 }
 
 void Type_In_Buffer(char key) { String_Push_Char(&buffer, key); }

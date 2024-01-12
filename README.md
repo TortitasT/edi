@@ -1,6 +1,7 @@
 ## Todo
 
-- [ ] Draw buffer text in multiple lines
+- [x] Draw buffer text in multiple lines
+- [ ] Cursor indicator
 - [ ] Soft Wrapping
 - [ ] Commands
 - [ ] Open files
@@ -20,3 +21,7 @@
 ```bash
 sudo pacman -S cmake sdl2 sdl2_ttf
 ```
+
+## Inspiration
+
+- https://github.com/aminosbh/sdl2-ttf-sample

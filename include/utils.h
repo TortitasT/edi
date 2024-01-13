@@ -6,5 +6,6 @@
 #include <string.h>
 
 void String_Push_Char(char **str, char concat);
+void String_Pop_Char(char **str, int position);
 
 #endif // UTILS_H_INCLUDED

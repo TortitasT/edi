@@ -16,6 +16,10 @@
 - [ ] Treesitter
 - [ ] LSP
 
+### Optimizations
+
+- [ ] Type_In_Buffer function probably has a horrible implementation
+
 ## Dependencies
 
 ```bash

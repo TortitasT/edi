@@ -25,6 +25,12 @@
 char *buffer = "\0";
 int cursor_position = 0;
 
+enum Mode {
+  NORMAL,
+  INSERT,
+};
+enum Mode mode = NORMAL;
+
 void Panic(int status, const char *format_message, ...) {
   va_list args;
   va_start(args, format_message);
@@ -41,20 +47,31 @@ void Move_Cursor(int new_position) {
   int len = strlen(buffer) - 1;
   int new_cursor_position = 0;
 
-  new_cursor_position = MAX(0, MIN(len, new_position));
-
-  if (buffer[new_cursor_position] == '\n') {
-    return;
-  }
-
-  if (buffer[new_cursor_position] == '\0') {
-    return;
-  }
+  new_cursor_position = MAX(0, MIN(len + 1, new_position));
 
   cursor_position = new_cursor_position;
 }
 
-void Type_In_Buffer(char key) { String_Push_Char(&buffer, key); }
+void Type_In_Buffer(char key) {
+  for (int i = 0; i < (int)strlen(buffer) + 1; i++) {
+    if (i == cursor_position) {
+      char *new_buffer = (char *)malloc((i + 1) * sizeof(char));
+      for (int j = 0; j < i; j++) {
+        new_buffer[j] = buffer[j];
+      }
+      new_buffer[i] = '\0';
+
+      String_Push_Char(&new_buffer, key);
+      for (int j = i; j < (int)strlen(buffer); j++) {
+        String_Push_Char(&new_buffer, buffer[j]);
+      }
+
+      buffer = new_buffer;
+    }
+  }
+
+  Move_Cursor(cursor_position + 1);
+}
 
 int Render_Text(SDL_Renderer *renderer, TTF_Font *font, const char *wanted_text,
                 SDL_Color text_color, SDL_Color text_background_color, int x,
@@ -93,6 +110,10 @@ int Render_Cursor(SDL_Renderer *renderer, TTF_Font *font, char character, int x,
                   int y) {
   SDL_Color color = {0x00, 0x00, 0x00, 0xFF};
   SDL_Color background_color = {0xFF, 0xFF, 0xFF, 0xFF};
+
+  if (character == '\0' || character == '\n') {
+    character = ' ';
+  }
 
   // Every 500ms, the cursor will blink
   if (SDL_GetTicks64() % 1000 < 500) {
@@ -135,6 +156,12 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
 
       Render_Cursor(renderer, font, current_character, line_column * CHAR_WIDTH,
                     line_number * CHAR_HEIGHT);
+
+      if (current_character == '\n') {
+        current_line = "";
+        line_number++;
+        line_column = -1;
+      }
 
       if (buffer_text[i + 1] != '\n') {
         current_line = "";
@@ -238,111 +265,106 @@ int main(int argc, char *argv[]) {
     // won't blink the cursor
     //
     // SDL_WaitEvent(&e);
-    SDL_PollEvent(&e);
+    // SDL_PollEvent(&e);
 
-    SDL_KeyboardEvent *key = NULL;
+    while (SDL_PollEvent(&e)) {
+      SDL_KeyboardEvent *key = NULL;
 
-    switch (e.type) {
-    case SDL_KEYDOWN:
-      key = &e.key;
-      break;
+      switch (e.type) {
+      case SDL_KEYDOWN:
+        key = &e.key;
+        break;
 
-    case SDL_KEYUP:
-      break;
+      case SDL_KEYUP:
+        break;
 
-    case SDL_TEXTINPUT:
-      Type_In_Buffer(e.text.text[0]);
-      break;
+      case SDL_TEXTINPUT:
+        Type_In_Buffer(e.text.text[0]);
+        break;
 
-    case SDL_QUIT:
-      quit = true;
-      break;
-
-    default:
-      break;
-    }
-
-    if (key) {
-      switch (key->keysym.sym) {
-      case SDLK_ESCAPE:
+      case SDL_QUIT:
         quit = true;
         break;
-      case SDLK_BACKSPACE: {
-        int len = strlen(buffer);
-        if (len > 0) {
-          char *new_buffer = malloc(len);
-          strncpy(new_buffer, buffer, len - 1);
-          new_buffer[len - 1] = '\0';
-          buffer = new_buffer;
+
+      default:
+        break;
+      }
+
+      if (key) {
+        switch (key->keysym.sym) {
+        case SDLK_ESCAPE:
+          quit = true;
+          break;
+        case SDLK_BACKSPACE: {
+          String_Pop_Char(&buffer, cursor_position - 1);
+          Move_Cursor(cursor_position - 1);
+          break;
         }
-        break;
-      }
-      case SDLK_RETURN: {
-        Type_In_Buffer('\n');
-        break;
-      }
-      case SDLK_LEFT: {
-        // cursor_position = MAX(0, cursor_position - 1);
-        Move_Cursor(cursor_position - 1);
-        break;
-      }
-      case SDLK_RIGHT: {
-        // cursor_position = MIN((int)strlen(buffer) - 1, cursor_position + 1);
-        Move_Cursor(cursor_position + 1);
-        break;
-      }
-      case SDLK_UP: {
-        int last_newline_position = 0;
-        int last_line_length = 0;
-        int steps_since_last_newline = 0;
-        for (int i = 0; i < (int)strlen(buffer); i++) {
-          if (buffer[i] == '\n') {
-            last_newline_position = i;
-            last_line_length = steps_since_last_newline;
-            steps_since_last_newline = 0;
-            continue;
-          }
-
-          steps_since_last_newline++;
-
-          if (i == cursor_position) {
-            if (last_line_length - steps_since_last_newline < 0) {
-              Move_Cursor(last_newline_position - 1);
-              break;
+        case SDLK_RETURN: {
+          Type_In_Buffer('\n');
+          break;
+        }
+        case SDLK_LEFT: {
+          Move_Cursor(cursor_position - 1);
+          break;
+        }
+        case SDLK_RIGHT: {
+          Move_Cursor(cursor_position + 1);
+          break;
+        }
+        case SDLK_UP: {
+          int last_newline_position = 0;
+          int last_line_length = 0;
+          int steps_since_last_newline = 0;
+          for (int i = 0; i < (int)strlen(buffer); i++) {
+            if (buffer[i] == '\n') {
+              last_newline_position = i;
+              last_line_length = steps_since_last_newline;
+              steps_since_last_newline = 0;
+              continue;
             }
 
-            Move_Cursor(last_newline_position - last_line_length +
-                        steps_since_last_newline - 1);
-            break;
-          }
-        }
-        break;
-      }
-      case SDLK_DOWN: {
-        int steps_since_last_newline = 0;
-        int line_cursor_position = 0;
-        for (int i = 0; i < (int)strlen(buffer); i++) {
-          if (buffer[i] == '\n') {
-            if (i > cursor_position) {
-              Move_Cursor(i + line_cursor_position + 1);
+            steps_since_last_newline++;
+
+            if (i == cursor_position) {
+              if (last_line_length - steps_since_last_newline < 0) {
+                Move_Cursor(last_newline_position - 1);
+                break;
+              }
+
+              Move_Cursor(last_newline_position - last_line_length +
+                          steps_since_last_newline - 1);
               break;
             }
-
-            steps_since_last_newline = 0;
-            continue;
           }
-
-          if (i == cursor_position) {
-            line_cursor_position = steps_since_last_newline;
-          }
-
-          steps_since_last_newline++;
+          break;
         }
-        break;
-      }
-      default: {
-        break;
-      }
+        case SDLK_DOWN: {
+          int steps_since_last_newline = 0;
+          int line_cursor_position = 0;
+          for (int i = 0; i < (int)strlen(buffer); i++) {
+            if (buffer[i] == '\n') {
+              if (i > cursor_position) {
+                Move_Cursor(i + line_cursor_position + 1);
+                break;
+              }
+
+              steps_since_last_newline = 0;
+              continue;
+            }
+
+            if (i == cursor_position) {
+              line_cursor_position = steps_since_last_newline;
+            }
+
+            steps_since_last_newline++;
+          }
+          break;
+        }
+        default: {
+          break;
+        }
+        }
       }
     }
 

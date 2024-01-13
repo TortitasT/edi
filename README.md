@@ -3,6 +3,8 @@
 - [x] Draw buffer text in multiple lines
 - [x] Cursor indicator
 - [x] Vim Modes
+- [x] Separate globals in its own file
+- [ ] Separate input logic in its own file
 - [ ] Vim Mode indicator
 - [ ] Soft Wrapping
 - [ ] Commands

@@ -1,7 +1,9 @@
 ## Todo
 
 - [x] Draw buffer text in multiple lines
-- [ ] Cursor indicator
+- [x] Cursor indicator
+- [x] Vim Modes
+- [ ] Vim Mode indicator
 - [ ] Soft Wrapping
 - [ ] Commands
 - [ ] Open files
@@ -15,6 +17,16 @@
 - [ ] Themes
 - [ ] Treesitter
 - [ ] LSP
+
+### Bugs
+
+- [ ] When on last character of line you cannot go up
+- [ ] When you type a longer line then type two short ones, put cursor at the
+      end of the first one and go down one, it will go down two lines
+
+### Optimizations
+
+- [ ] Type_In_Buffer function probably has a horrible implementation
 
 ## Dependencies
 

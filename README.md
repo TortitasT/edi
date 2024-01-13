@@ -4,7 +4,7 @@
 - [x] Cursor indicator
 - [x] Vim Modes
 - [x] Separate globals in its own file
-- [ ] Vim Mode indicator
+- [x] Vim Mode indicator
 - [ ] Soft Wrapping
 - [ ] Commands
 - [ ] Open files

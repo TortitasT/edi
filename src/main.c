@@ -1,3 +1,4 @@
+#include <SDL_events.h>
 #include <SDL_timer.h>
 #include <stdlib.h>
 
@@ -26,10 +27,10 @@ char *buffer = "\0";
 int cursor_position = 0;
 
 enum Mode {
-  NORMAL,
-  INSERT,
+  MODE_NORMAL,
+  MODE_INSERT,
 };
-enum Mode mode = NORMAL;
+enum Mode mode = MODE_NORMAL;
 
 void Panic(int status, const char *format_message, ...) {
   va_list args;
@@ -218,6 +219,114 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
   return 1;
 }
 
+void Handle_Key(SDL_KeyboardEvent *key) {
+  switch (key->keysym.sym) {
+  case SDLK_ESCAPE:
+    mode = MODE_NORMAL;
+    break;
+  case SDLK_i: {
+    if (mode == MODE_NORMAL) {
+      mode = MODE_INSERT;
+    }
+    break;
+  }
+  case SDLK_BACKSPACE: {
+    if (mode == MODE_INSERT) {
+      String_Pop_Char(&buffer, cursor_position - 1);
+      Move_Cursor(cursor_position - 1);
+    }
+    break;
+  }
+  case SDLK_RETURN: {
+    if (mode == MODE_INSERT) {
+      Type_In_Buffer('\n');
+    }
+    break;
+  }
+
+  case SDLK_h:
+  case SDLK_LEFT: {
+    if (mode == MODE_INSERT && key->keysym.sym == SDLK_h) {
+      break;
+    }
+
+    Move_Cursor(cursor_position - 1);
+    break;
+  }
+  case SDLK_l:
+  case SDLK_RIGHT: {
+    if (mode == MODE_INSERT && key->keysym.sym == SDLK_l) {
+      break;
+    }
+
+    Move_Cursor(cursor_position + 1);
+    break;
+  }
+  case SDLK_k:
+  case SDLK_UP: {
+    if (mode == MODE_INSERT && key->keysym.sym == SDLK_k) {
+      break;
+    }
+
+    int last_newline_position = 0;
+    int last_line_length = 0;
+    int steps_since_last_newline = 0;
+    for (int i = 0; i < (int)strlen(buffer); i++) {
+      if (buffer[i] == '\n') {
+        last_newline_position = i;
+        last_line_length = steps_since_last_newline;
+        steps_since_last_newline = 0;
+        continue;
+      }
+
+      steps_since_last_newline++;
+
+      if (i == cursor_position) {
+        if (last_line_length - steps_since_last_newline < 0) {
+          Move_Cursor(last_newline_position - 1);
+          break;
+        }
+
+        Move_Cursor(last_newline_position - last_line_length +
+                    steps_since_last_newline - 1);
+        break;
+      }
+    }
+    break;
+  }
+  case SDLK_j:
+  case SDLK_DOWN: {
+    if (mode == MODE_INSERT && key->keysym.sym == SDLK_j) {
+      break;
+    }
+
+    int steps_since_last_newline = 0;
+    int line_cursor_position = 0;
+    for (int i = 0; i < (int)strlen(buffer); i++) {
+      if (buffer[i] == '\n') {
+        if (i > cursor_position) {
+          Move_Cursor(i + line_cursor_position + 1);
+          break;
+        }
+
+        steps_since_last_newline = 0;
+        continue;
+      }
+
+      if (i == cursor_position) {
+        line_cursor_position = steps_since_last_newline;
+      }
+
+      steps_since_last_newline++;
+    }
+    break;
+  }
+  default: {
+    break;
+  }
+  }
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -263,23 +372,22 @@ int main(int argc, char *argv[]) {
 
     // If we use SDL_WaitEvent, the program will wait for an event to happen and
     // won't blink the cursor
-    //
     // SDL_WaitEvent(&e);
-    // SDL_PollEvent(&e);
 
     while (SDL_PollEvent(&e)) {
-      SDL_KeyboardEvent *key = NULL;
-
       switch (e.type) {
+      case SDL_TEXTINPUT: {
+        if (mode == MODE_INSERT) {
+          Type_In_Buffer(e.text.text[0]);
+        }
+        break;
+      }
+
       case SDL_KEYDOWN:
-        key = &e.key;
         break;
 
       case SDL_KEYUP:
-        break;
-
-      case SDL_TEXTINPUT:
-        Type_In_Buffer(e.text.text[0]);
+        Handle_Key(&e.key);
         break;
 
       case SDL_QUIT:
@@ -289,87 +397,9 @@ int main(int argc, char *argv[]) {
       default:
         break;
       }
-
-      if (key) {
-        switch (key->keysym.sym) {
-        case SDLK_ESCAPE:
-          quit = true;
-          break;
-        case SDLK_BACKSPACE: {
-          String_Pop_Char(&buffer, cursor_position - 1);
-          Move_Cursor(cursor_position - 1);
-          break;
-        }
-        case SDLK_RETURN: {
-          Type_In_Buffer('\n');
-          break;
-        }
-        case SDLK_LEFT: {
-          Move_Cursor(cursor_position - 1);
-          break;
-        }
-        case SDLK_RIGHT: {
-          Move_Cursor(cursor_position + 1);
-          break;
-        }
-        case SDLK_UP: {
-          int last_newline_position = 0;
-          int last_line_length = 0;
-          int steps_since_last_newline = 0;
-          for (int i = 0; i < (int)strlen(buffer); i++) {
-            if (buffer[i] == '\n') {
-              last_newline_position = i;
-              last_line_length = steps_since_last_newline;
-              steps_since_last_newline = 0;
-              continue;
-            }
-
-            steps_since_last_newline++;
-
-            if (i == cursor_position) {
-              if (last_line_length - steps_since_last_newline < 0) {
-                Move_Cursor(last_newline_position - 1);
-                break;
-              }
-
-              Move_Cursor(last_newline_position - last_line_length +
-                          steps_since_last_newline - 1);
-              break;
-            }
-          }
-          break;
-        }
-        case SDLK_DOWN: {
-          int steps_since_last_newline = 0;
-          int line_cursor_position = 0;
-          for (int i = 0; i < (int)strlen(buffer); i++) {
-            if (buffer[i] == '\n') {
-              if (i > cursor_position) {
-                Move_Cursor(i + line_cursor_position + 1);
-                break;
-              }
-
-              steps_since_last_newline = 0;
-              continue;
-            }
-
-            if (i == cursor_position) {
-              line_cursor_position = steps_since_last_newline;
-            }
-
-            steps_since_last_newline++;
-          }
-          break;
-        }
-        default: {
-          break;
-        }
-        }
-      }
     }
 
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-
     SDL_RenderClear(renderer);
 
     if (buffer[0] != '\0') {

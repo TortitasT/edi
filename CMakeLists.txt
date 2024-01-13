@@ -11,6 +11,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
 add_executable(${PROJECT_NAME} 
   src/main.c
   src/utils.c
+  src/globals.c
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE src include)

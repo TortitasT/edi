@@ -1,3 +1,4 @@
+#include <SDL_timer.h>
 #include <stdlib.h>
 
 #include "utils.h"
@@ -22,7 +23,6 @@
 
 char *buffer = "\0";
 int cursor_position = 0;
-int cursor_blinking = 0;
 
 void Panic(int status, const char *format_message, ...) {
   va_list args;
@@ -67,6 +67,27 @@ int Render_Paragraph(SDL_Renderer *renderer, TTF_Font *font,
 
   SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
   SDL_RenderCopy(renderer, text, NULL, &textRect);
+
+  return 1;
+}
+
+int Render_Cursor(SDL_Renderer *renderer, TTF_Font *font, char character, int x,
+                  int y) {
+  SDL_Color cursorColor = {0x00, 0x00, 0x00, 0xFF};
+  SDL_Color cursorBackgroundColor = {0xFF, 0xFF, 0xFF, 0xFF};
+
+  if (SDL_GetTicks64() % 1000 < 500) {
+    cursorBackgroundColor = (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF};
+  } else {
+    cursorBackgroundColor = (SDL_Color){0x00, 0x00, 0x00, 0xFF};
+  }
+
+  char *character_string = malloc(2);
+  character_string[0] = character;
+  character_string[1] = '\0';
+
+  Render_Paragraph(renderer, font, character_string, cursorColor,
+                   cursorBackgroundColor, x, y);
 
   return 1;
 }
@@ -144,7 +165,12 @@ int main(int argc, char *argv[]) {
 
   while (!quit) {
     SDL_Event e;
-    SDL_WaitEvent(&e);
+
+    // If we use SDL_WaitEvent, the program will wait for an event to happen and
+    // won't blink the cursor
+    //
+    // SDL_WaitEvent(&e);
+    SDL_PollEvent(&e);
 
     SDL_KeyboardEvent *key = NULL;
 

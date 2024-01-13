@@ -4,7 +4,6 @@
 - [x] Cursor indicator
 - [x] Vim Modes
 - [x] Separate globals in its own file
-- [ ] Separate input logic in its own file
 - [ ] Vim Mode indicator
 - [ ] Soft Wrapping
 - [ ] Commands
@@ -25,6 +24,7 @@
 - [ ] When on last character of line you cannot go up
 - [ ] When you type a longer line then type two short ones, put cursor at the
       end of the first one and go down one, it will go down two lines
+- [ ] When you type two newlines one shows as a weird character
 
 ### Optimizations
 

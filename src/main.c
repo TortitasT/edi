@@ -37,19 +37,13 @@ void Panic(int status, const char *format_message, ...) {
   exit(status);
 }
 
-void move_cursor(int direction) {
-  int len = strlen(buffer);
+void Move_Cursor(int new_position) {
+  int len = strlen(buffer) - 1;
   int new_cursor_position = 0;
 
-  if (direction > 0) {
-    new_cursor_position = MAX(0, cursor_position - 1);
-  } else {
-    new_cursor_position = MIN(len, cursor_position + 1);
-  }
+  new_cursor_position = MAX(0, MIN(len, new_position));
 
   if (buffer[new_cursor_position] == '\n') {
-    // TODO: Not working
-    move_cursor(direction);
     return;
   }
 
@@ -105,6 +99,7 @@ int Render_Cursor(SDL_Renderer *renderer, TTF_Font *font, char character, int x,
     background_color = (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF};
   } else {
     background_color = (SDL_Color){0x00, 0x00, 0x00, 0xFF};
+    color = (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF};
   }
 
   char *character_string = malloc(2);
@@ -288,12 +283,61 @@ int main(int argc, char *argv[]) {
       }
       case SDLK_LEFT: {
         // cursor_position = MAX(0, cursor_position - 1);
-        move_cursor(1);
+        Move_Cursor(cursor_position - 1);
         break;
       }
       case SDLK_RIGHT: {
         // cursor_position = MIN((int)strlen(buffer) - 1, cursor_position + 1);
-        move_cursor(-1);
+        Move_Cursor(cursor_position + 1);
+        break;
+      }
+      case SDLK_UP: {
+        int last_newline_position = 0;
+        int last_line_length = 0;
+        int steps_since_last_newline = 0;
+        for (int i = 0; i < (int)strlen(buffer); i++) {
+          if (buffer[i] == '\n') {
+            last_newline_position = i;
+            last_line_length = steps_since_last_newline;
+            steps_since_last_newline = 0;
+            continue;
+          }
+
+          steps_since_last_newline++;
+
+          if (i == cursor_position) {
+            if (last_line_length - steps_since_last_newline < 0) {
+              Move_Cursor(last_newline_position - 1);
+              break;
+            }
+
+            Move_Cursor(last_newline_position - last_line_length +
+                        steps_since_last_newline - 1);
+            break;
+          }
+        }
+        break;
+      }
+      case SDLK_DOWN: {
+        int steps_since_last_newline = 0;
+        int line_cursor_position = 0;
+        for (int i = 0; i < (int)strlen(buffer); i++) {
+          if (buffer[i] == '\n') {
+            if (i > cursor_position) {
+              Move_Cursor(i + line_cursor_position + 1);
+              break;
+            }
+
+            steps_since_last_newline = 0;
+            continue;
+          }
+
+          if (i == cursor_position) {
+            line_cursor_position = steps_since_last_newline;
+          }
+
+          steps_since_last_newline++;
+        }
         break;
       }
       default: {

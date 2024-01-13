@@ -1,5 +1,17 @@
 #include "utils.h"
 
+void Panic(int status, const char *format_message, ...) {
+  va_list args;
+  va_start(args, format_message);
+  vfprintf(stderr, format_message, args);
+  va_end(args);
+
+  TTF_Quit();
+  SDL_Quit();
+
+  exit(status);
+}
+
 void String_Push_Char(char **str, char concat) {
   //                                             1 for the \0 and 1 for the new
   //                                             char

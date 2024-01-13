@@ -2,6 +2,7 @@
 #include <SDL_timer.h>
 #include <stdlib.h>
 
+#include "globals.h"
 #include "utils.h"
 
 #include <SDL_keyboard.h>
@@ -23,26 +24,11 @@
 
 #define FONT_PATH "assets/fonts/GoMonoNerdFont-Regular.ttf"
 
-char *buffer = "\0";
-int cursor_position = 0;
-
 enum Mode {
   MODE_NORMAL,
   MODE_INSERT,
 };
 enum Mode mode = MODE_NORMAL;
-
-void Panic(int status, const char *format_message, ...) {
-  va_list args;
-  va_start(args, format_message);
-  vfprintf(stderr, format_message, args);
-  va_end(args);
-
-  TTF_Quit();
-  SDL_Quit();
-
-  exit(status);
-}
 
 void Move_Cursor(int new_position) {
   int len = strlen(buffer) - 1;

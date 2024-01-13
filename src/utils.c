@@ -1,9 +1,5 @@
 #include "utils.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 void String_Push_Char(char **str, char concat) {
   //                                             1 for the \0 and 1 for the new
   //                                             char

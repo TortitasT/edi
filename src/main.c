@@ -21,6 +21,8 @@
 #define FONT_PATH "assets/fonts/GoMonoNerdFont-Regular.ttf"
 
 char *buffer = "\0";
+int cursor_position = 0;
+int cursor_blinking = 0;
 
 void Panic(int status, const char *format_message, ...) {
   va_list args;

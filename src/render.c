@@ -1,4 +1,5 @@
 #include "render.h"
+#include "globals.h"
 
 int Render_Text(SDL_Renderer *renderer, TTF_Font *font, const char *wanted_text,
                 SDL_Color text_color, SDL_Color text_background_color, int x,
@@ -94,6 +95,31 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
     String_Push_Char(&current_line, current_character);
     line_column++;
   }
+
+  return 1;
+}
+
+int Render_Status_Bar(SDL_Renderer *renderer, TTF_Font *font) {
+  SDL_Color text_color = {0x00, 0x00, 0x00, 0xFF};
+  SDL_Color text_background_color = {0xFF, 0xFF, 0xFF, 0xFF};
+
+  switch (mode) {
+  case MODE_INSERT:
+    text_color = (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF};
+    text_background_color = (SDL_Color){0x00, 0x00, 0x00, 0xFF};
+    break;
+  case MODE_NORMAL:
+    text_color = (SDL_Color){0x00, 0x00, 0x00, 0xFF};
+    text_background_color = (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF};
+    break;
+  }
+
+  char *status_bar_text = malloc(100);
+  sprintf(status_bar_text, "-- %s --",
+          mode == MODE_NORMAL ? "NORMAL" : "INSERT");
+
+  Render_Text(renderer, font, status_bar_text, text_color,
+              text_background_color, 0, SCREEN_HEIGHT - CHAR_HEIGHT);
 
   return 1;
 }

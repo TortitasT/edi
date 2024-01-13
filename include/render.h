@@ -14,4 +14,6 @@ int Render_Text(SDL_Renderer *renderer, TTF_Font *font, const char *wanted_text,
 int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
                   const char *buffer_text);
 
+int Render_Status_Bar(SDL_Renderer *renderer, TTF_Font *font);
+
 #endif /* RENDER_H_INCLUDED */

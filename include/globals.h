@@ -11,4 +11,11 @@
 extern char *buffer;
 extern int cursor_position;
 
+enum Mode {
+  MODE_NORMAL,
+  MODE_INSERT,
+};
+
+extern enum Mode mode;
+
 #endif /* GLOBALS_H_INCLUDED */

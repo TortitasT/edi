@@ -17,12 +17,6 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-enum Mode {
-  MODE_NORMAL,
-  MODE_INSERT,
-};
-enum Mode mode = MODE_NORMAL;
-
 void Type_In_Buffer(char key) {
   for (int i = 0; i < (int)strlen(buffer) + 1; i++) {
     if (i == cursor_position) {
@@ -230,6 +224,8 @@ int main(int argc, char *argv[]) {
     if (buffer[0] != '\0') {
       Render_Buffer(renderer, font, buffer);
     }
+
+    Render_Status_Bar(renderer, font);
 
     SDL_RenderPresent(renderer);
   }

@@ -12,6 +12,8 @@ add_executable(${PROJECT_NAME}
   src/main.c
   src/utils.c
   src/globals.c
+  src/cursor.c
+  src/render.c
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE src include)

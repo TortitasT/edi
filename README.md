@@ -1,3 +1,5 @@
+![Screenshot](./img/screenshot.png)
+
 ## Todo
 
 - [x] Draw buffer text in multiple lines

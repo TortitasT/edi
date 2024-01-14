@@ -23,6 +23,7 @@
 ### Bugs
 
 - [ ] When on last character of line you cannot go up
+- [ ] When there are two newlines the cursor will jump up awkwardly
 - [ ] When you type a longer line then type two short ones, put cursor at the
       end of the first one and go down one, it will go down two lines
 - [x] When you type two newlines one shows as a weird character

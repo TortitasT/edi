@@ -1,5 +1,7 @@
 #include "render.h"
 #include "globals.h"
+#include "utils.h"
+#include <string.h>
 
 int Render_Text(SDL_Renderer *renderer, TTF_Font *font, const char *wanted_text,
                 SDL_Color text_color, SDL_Color text_background_color, int x,
@@ -42,12 +44,16 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
   int line_number = 0;
   int line_column = 0;
   char *current_line = "\0";
+
   char current_character;
+  int is_cursor = 0;
 
   for (int i = 0; (unsigned)i < strlen(buffer_text) + 1; i++) {
     current_character = buffer_text[i];
-    int is_cursor = i == cursor_position;
+    is_cursor = i == cursor_position;
 
+    // If we are at the cursor position, render the current line and the cursor
+    // and advance the column
     if (is_cursor) {
       if (strlen(current_line) > 0) {
         Render_Text(renderer, font, current_line, text_color,
@@ -58,21 +64,12 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
 
       Render_Cursor(renderer, font, current_character, line_column * CHAR_WIDTH,
                     line_number * CHAR_HEIGHT);
-
-      if (current_character == '\n') {
-        current_line = "";
-        line_number++;
-        line_column = -1;
-      }
-
-      if (buffer_text[i + 1] != '\n') {
-        current_line = "";
-        line_column++;
-      }
-
+      current_line = "";
+      line_column++;
       continue;
     }
 
+    // If we are at the end of the buffer, render the current/rest of the line
     if (current_character == '\0' && strlen(current_line) > 0) {
       Render_Text(renderer, font, current_line, text_color,
                   text_background_color,
@@ -81,6 +78,8 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
       continue;
     }
 
+    // If we are at the end of the line, render the current line and advance the
+    // line number and reset the column
     if (current_character == '\n' && strlen(current_line) > 0) {
       Render_Text(renderer, font, current_line, text_color,
                   text_background_color,
@@ -92,6 +91,16 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
       continue;
     }
 
+    // If we encounter a newline, advance the line number and reset the column
+    if (current_character == '\n') {
+      current_line = "";
+      line_number++;
+      line_column = 0;
+      continue;
+    }
+
+    // If we are in the middle of the buffer, concatenate the character to the
+    // current line and advance the column
     String_Push_Char(&current_line, current_character);
     line_column++;
   }

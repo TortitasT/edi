@@ -1,6 +1,8 @@
 #ifndef GLOBALS_H_INCLUDED
 #define GLOBALS_H_INCLUDED
 
+#include <stdlib.h>
+
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 #define CHAR_HEIGHT 20
@@ -18,5 +20,8 @@ enum Mode {
 };
 
 extern enum Mode mode;
+
+int Init_Globals(void);
+void Free_Globals(void);
 
 #endif /* GLOBALS_H_INCLUDED */

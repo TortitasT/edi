@@ -37,8 +37,7 @@ int Render_Text(SDL_Renderer *renderer, TTF_Font *font, const char *wanted_text,
   return 1;
 }
 
-int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
-                  const char *buffer_text) {
+int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font) {
   SDL_Color text_color = {0x00, 0x00, 0x00, 0xFF};
   SDL_Color text_background_color = {0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -51,8 +50,8 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
   char current_character;
   int is_cursor = 0;
 
-  for (int i = 0; (unsigned)i < strlen(buffer_text) + 1; i++) {
-    current_character = buffer_text[i];
+  for (int i = 0; i < (int)strlen(buffer) + 1; i++) {
+    current_character = buffer[i];
     is_cursor = i == cursor_position;
 
     // If we are at the cursor position, render the current line and the cursor
@@ -67,7 +66,7 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
 
       Render_Cursor(renderer, font, current_character, line_column * CHAR_WIDTH,
                     line_number * CHAR_HEIGHT);
-      current_line = malloc(sizeof(char));
+      current_line = realloc(current_line, sizeof(char));
       current_line[0] = '\0';
       line_column++;
 
@@ -96,7 +95,7 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
                   text_background_color,
                   (line_column - strlen(current_line)) * CHAR_WIDTH,
                   line_number * CHAR_HEIGHT);
-      current_line = malloc(sizeof(char));
+      current_line = realloc(current_line, sizeof(char));
       current_line[0] = '\0';
       line_number++;
       line_column = 0;
@@ -105,7 +104,7 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
 
     // If we encounter a newline, advance the line number and reset the column
     if (current_character == '\n') {
-      current_line = malloc(sizeof(char));
+      current_line = realloc(current_line, sizeof(char));
       current_line[0] = '\0';
       line_number++;
       line_column = 0;

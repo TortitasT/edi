@@ -25,7 +25,9 @@ void String_Push_Char(char **str, char concat) {
   new_str[strlen(*str)] = concat;
   new_str[strlen(*str) + 1] = '\0';
 
-  *str = new_str;
+  *str = realloc(*str, (strlen(new_str) + 1) * sizeof(char));
+  strcpy(*str, new_str);
+  free(new_str);
 }
 
 void String_Pop_Char(char **str, int position) {

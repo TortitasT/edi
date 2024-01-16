@@ -31,21 +31,32 @@ void Type_In_Buffer(char key) {
         String_Push_Char(&new_buffer, buffer[j]);
       }
 
-      buffer = new_buffer;
+      buffer = realloc(buffer, (strlen(new_buffer) + 1) * sizeof(char));
+      strcpy(buffer, new_buffer);
+      free(new_buffer);
     }
   }
 
   Move_Cursor(cursor_position + 1);
 }
 
-void Handle_Key_Down(SDL_KeyboardEvent *key) {
+void Handle_Key_Down(SDL_KeyboardEvent *key, bool *quit) {
   switch (key->keysym.sym) {
-  default:
+  case SDLK_q: {
+    if (mode != MODE_NORMAL) {
+      break;
+    }
+
+    *quit = true;
     break;
+  }
+  default: {
+    break;
+  }
   }
 }
 
-void Handle_Key_Up(SDL_KeyboardEvent *key) {
+void Handle_Key_Up(SDL_KeyboardEvent *key, bool *quit) {
   switch (key->keysym.sym) {
   case SDLK_ESCAPE:
     mode = MODE_NORMAL;
@@ -113,8 +124,8 @@ void Handle_Key_Up(SDL_KeyboardEvent *key) {
       // If we encounter a newline or the start of the buffer and we are not
       // counting the left pad, move to the same column.
       if ((buffer[i] == '\n' || i == 0) && !counting_left_pad) {
-        // If the left pad is greater than the current line length, move to the
-        // end of the line.
+        // If the left pad is greater than the current line length, move to
+        // the end of the line.
         if (left_pad > current_line_length) {
           Move_Cursor(i + current_line_length + 1);
           break;
@@ -129,7 +140,8 @@ void Handle_Key_Up(SDL_KeyboardEvent *key) {
         continue;
       }
 
-      // If we are not counting the left pad, increment the current line length.
+      // If we are not counting the left pad, increment the current line
+      // length.
       current_line_length++;
     }
     break;
@@ -170,6 +182,10 @@ int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
+  if (Init_Globals() < 0) {
+    Panic(1, "Could not initialize globals!\n");
+  }
+
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     Panic(1, "SDL2 could not be initialized!\nSDL2 Error: %s\n",
           SDL_GetError());
@@ -209,9 +225,8 @@ int main(int argc, char *argv[]) {
   while (!quit) {
     SDL_Event e;
 
-    // If we use SDL_WaitEvent, the program will wait for an event to happen and
-    // won't blink the cursor
-    // SDL_WaitEvent(&e);
+    // If we use SDL_WaitEvent, the program will wait for an event to happen
+    // and won't blink the cursor SDL_WaitEvent(&e);
 
     while (SDL_PollEvent(&e)) {
       switch (e.type) {
@@ -223,11 +238,11 @@ int main(int argc, char *argv[]) {
       }
 
       case SDL_KEYDOWN:
-        Handle_Key_Down(&e.key);
+        Handle_Key_Down(&e.key, &quit);
         break;
 
       case SDL_KEYUP:
-        Handle_Key_Up(&e.key);
+        Handle_Key_Up(&e.key, &quit);
         break;
 
       case SDL_QUIT:
@@ -243,13 +258,15 @@ int main(int argc, char *argv[]) {
     SDL_RenderClear(renderer);
 
     if (buffer[0] != '\0') {
-      Render_Buffer(renderer, font, buffer);
+      Render_Buffer(renderer, font);
     }
 
     Render_Status_Bar(renderer, font);
 
     SDL_RenderPresent(renderer);
   }
+
+  Free_Globals();
 
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);

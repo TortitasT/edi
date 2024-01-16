@@ -29,13 +29,27 @@
 - [x] When you type a longer line then type two short ones, put cursor at the
       end of the first one and go down one, it will go down two lines
 - [x] When you type two newlines one shows as a weird character
-- [ ] MEMORY LEAKS, arch crashes when I leave it running for a while :(
+- [x] MEMORY LEAKS, arch crashes when I leave it running for a while :(
 - [ ] When going up to the first line or down from the first line the jump will
       be 1 character off
 
 ### Optimizations
 
 - [ ] Type_In_Buffer function probably has a horrible implementation
+
+## Development
+
+To run the program
+
+```bash
+./run.sh
+```
+
+To run the program with valgrind
+
+```bash
+./valgrind.sh
+```
 
 ## Dependencies
 

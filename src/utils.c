@@ -17,7 +17,10 @@ void String_Push_Char(char **str, char concat) {
   //                                             char
   char *new_str = (char *)malloc((strlen(*str) + 2) * sizeof(char));
 
-  strcpy(new_str, *str);
+  // strcpy(new_str, *str);
+  for (int i = 0; i < (int)strlen(*str); i++) {
+    new_str[i] = (*str)[i];
+  }
 
   new_str[strlen(*str)] = concat;
   new_str[strlen(*str) + 1] = '\0';

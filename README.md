@@ -7,7 +7,7 @@
 - [x] Vim Modes
 - [x] Separate globals in its own file
 - [x] Vim Mode indicator
-- [ ] Scrolling
+- [x] Scrolling
 - [ ] Soft Wrapping
 - [ ] Commands
 - [ ] Open files

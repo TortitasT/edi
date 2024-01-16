@@ -41,6 +41,9 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font) {
   SDL_Color text_color = {0x00, 0x00, 0x00, 0xFF};
   SDL_Color text_background_color = {0xFF, 0xFF, 0xFF, 0xFF};
 
+  int max_lines = (screen_height / CHAR_HEIGHT) - 3;
+  int left_padding = CHAR_WIDTH;
+
   int line_number = 0;
   int line_column = 0;
 
@@ -50,22 +53,41 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font) {
   char current_character;
   int is_cursor = 0;
 
-  for (int i = 0; i < (int)strlen(buffer) + 1; i++) {
+  int start_position = 0;
+  int desired_line = MAX(0, cursor_row - max_lines + 8);
+
+  for (int i = 0; i < (int)strlen(buffer); i++) {
+    if (buffer[i] == '\n') {
+      desired_line--;
+    }
+
+    if (desired_line == 0) {
+      start_position = i + 1;
+      break;
+    }
+  }
+
+  for (int i = start_position; i < (int)strlen(buffer) + 1; i++) {
     current_character = buffer[i];
     is_cursor = i == cursor_position;
+
+    if (line_number >= max_lines) {
+      break;
+    }
 
     // If we are at the cursor position, render the current line and the cursor
     // and advance the column
     if (is_cursor) {
       if (strlen(current_line) > 0) {
-        Render_Text(renderer, font, current_line, text_color,
-                    text_background_color,
-                    (line_column - strlen(current_line)) * CHAR_WIDTH,
-                    line_number * CHAR_HEIGHT);
+        Render_Text(
+            renderer, font, current_line, text_color, text_background_color,
+            (line_column - strlen(current_line)) * CHAR_WIDTH + left_padding,
+            (line_number + 1) * CHAR_HEIGHT);
       }
 
-      Render_Cursor(renderer, font, current_character, line_column * CHAR_WIDTH,
-                    line_number * CHAR_HEIGHT);
+      Render_Cursor(renderer, font, current_character,
+                    line_column * CHAR_WIDTH + left_padding,
+                    (line_number + 1) * CHAR_HEIGHT);
       current_line = realloc(current_line, sizeof(char));
       current_line[0] = '\0';
       line_column++;
@@ -81,20 +103,20 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font) {
 
     // If we are at the end of the buffer, render the current/rest of the line
     if (current_character == '\0' && strlen(current_line) > 0) {
-      Render_Text(renderer, font, current_line, text_color,
-                  text_background_color,
-                  (line_column - strlen(current_line)) * CHAR_WIDTH,
-                  line_number * CHAR_HEIGHT);
+      Render_Text(
+          renderer, font, current_line, text_color, text_background_color,
+          (line_column - strlen(current_line)) * CHAR_WIDTH + left_padding,
+          (line_number + 1) * CHAR_HEIGHT);
       continue;
     }
 
     // If we are at the end of the line, render the current line and advance the
     // line number and reset the column
     if (current_character == '\n' && strlen(current_line) > 0) {
-      Render_Text(renderer, font, current_line, text_color,
-                  text_background_color,
-                  (line_column - strlen(current_line)) * CHAR_WIDTH,
-                  line_number * CHAR_HEIGHT);
+      Render_Text(
+          renderer, font, current_line, text_color, text_background_color,
+          (line_column - strlen(current_line)) * CHAR_WIDTH + left_padding,
+          (line_number + 1) * CHAR_HEIGHT);
       current_line = realloc(current_line, sizeof(char));
       current_line[0] = '\0';
       line_number++;
@@ -141,7 +163,8 @@ int Render_Status_Bar(SDL_Renderer *renderer, TTF_Font *font) {
           mode == MODE_NORMAL ? "NORMAL" : "INSERT");
 
   Render_Text(renderer, font, status_bar_text, text_color,
-              text_background_color, 0, screen_height - CHAR_HEIGHT);
+              text_background_color, CHAR_WIDTH,
+              screen_height - (CHAR_HEIGHT * 2));
 
   free(status_bar_text);
   return 1;

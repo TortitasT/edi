@@ -3,6 +3,12 @@
 char *buffer;
 int cursor_position = 0;
 int cursor_left_padding = 0;
+int cursor_row = 0;
+
+int screen_width = SCREEN_WIDTH;
+int screen_height = SCREEN_HEIGHT;
+
+enum Mode mode = MODE_NORMAL;
 
 int Init_Globals(void) {
   buffer = malloc(sizeof(char));
@@ -16,8 +22,3 @@ int Init_Globals(void) {
 }
 
 void Free_Globals(void) { free(buffer); }
-
-int screen_width = SCREEN_WIDTH;
-int screen_height = SCREEN_HEIGHT;
-
-enum Mode mode = MODE_NORMAL;

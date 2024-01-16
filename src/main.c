@@ -1,5 +1,6 @@
 #include <SDL_events.h>
 #include <SDL_timer.h>
+#include <SDL_video.h>
 #include <stdlib.h>
 
 #include "cursor.h"
@@ -199,9 +200,9 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  SDL_Window *window =
-      SDL_CreateWindow("edi", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                       SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+  SDL_Window *window = SDL_CreateWindow(
+      "edi", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,
+      SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
   if (!window) {
     Panic(1, "Window could not be created!\nSDL_Error: %s\n", SDL_GetError());
   }
@@ -248,6 +249,20 @@ int main(int argc, char *argv[]) {
       case SDL_QUIT:
         quit = true;
         break;
+
+      case SDL_WINDOWEVENT: {
+        switch (e.window.event) {
+        case SDL_WINDOWEVENT_RESIZED: {
+          screen_width = e.window.data1;
+          screen_height = e.window.data2;
+          break;
+        }
+        default:
+          break;
+        }
+
+        break;
+      }
 
       default:
         break;

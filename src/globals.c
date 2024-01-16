@@ -17,4 +17,7 @@ int Init_Globals(void) {
 
 void Free_Globals(void) { free(buffer); }
 
+int screen_width = SCREEN_WIDTH;
+int screen_height = SCREEN_HEIGHT;
+
 enum Mode mode = MODE_NORMAL;

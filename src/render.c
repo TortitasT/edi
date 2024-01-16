@@ -141,7 +141,7 @@ int Render_Status_Bar(SDL_Renderer *renderer, TTF_Font *font) {
           mode == MODE_NORMAL ? "NORMAL" : "INSERT");
 
   Render_Text(renderer, font, status_bar_text, text_color,
-              text_background_color, 0, SCREEN_HEIGHT - CHAR_HEIGHT);
+              text_background_color, 0, screen_height - CHAR_HEIGHT);
 
   free(status_bar_text);
   return 1;

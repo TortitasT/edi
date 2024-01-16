@@ -14,6 +14,9 @@ extern char *buffer;
 extern int cursor_position;
 extern int cursor_left_padding;
 
+extern int screen_width;
+extern int screen_height;
+
 enum Mode {
   MODE_NORMAL,
   MODE_INSERT,

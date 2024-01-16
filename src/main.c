@@ -51,37 +51,6 @@ void Handle_Key_Down(SDL_KeyboardEvent *key, bool *quit) {
     *quit = true;
     break;
   }
-  default: {
-    break;
-  }
-  }
-}
-
-void Handle_Key_Up(SDL_KeyboardEvent *key, bool *quit) {
-  switch (key->keysym.sym) {
-  case SDLK_ESCAPE:
-    mode = MODE_NORMAL;
-    break;
-  case SDLK_i: {
-    if (mode == MODE_NORMAL) {
-      mode = MODE_INSERT;
-    }
-    break;
-  }
-  case SDLK_BACKSPACE: {
-    if (mode == MODE_INSERT) {
-      String_Pop_Char(&buffer, cursor_position - 1);
-      Move_Cursor(cursor_position - 1);
-    }
-    break;
-  }
-  case SDLK_RETURN: {
-    if (mode == MODE_INSERT) {
-      Type_In_Buffer('\n');
-    }
-    break;
-  }
-
   case SDLK_h:
   case SDLK_LEFT: {
     if (mode == MODE_INSERT && key->keysym.sym == SDLK_h) {
@@ -170,6 +139,37 @@ void Handle_Key_Up(SDL_KeyboardEvent *key, bool *quit) {
         Move_Cursor(i + cursor_left_padding);
         break;
       }
+    }
+    break;
+  }
+
+  default: {
+    break;
+  }
+  }
+}
+
+void Handle_Key_Up(SDL_KeyboardEvent *key, bool *quit) {
+  switch (key->keysym.sym) {
+  case SDLK_ESCAPE:
+    mode = MODE_NORMAL;
+    break;
+  case SDLK_i: {
+    if (mode == MODE_NORMAL) {
+      mode = MODE_INSERT;
+    }
+    break;
+  }
+  case SDLK_BACKSPACE: {
+    if (mode == MODE_INSERT) {
+      String_Pop_Char(&buffer, cursor_position - 1);
+      Move_Cursor(cursor_position - 1);
+    }
+    break;
+  }
+  case SDLK_RETURN: {
+    if (mode == MODE_INSERT) {
+      Type_In_Buffer('\n');
     }
     break;
   }

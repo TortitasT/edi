@@ -13,6 +13,20 @@ void Move_Cursor(int new_position) {
     }
   }
 
+  if (new_position > cursor_position) {
+    for (int i = cursor_position; i < new_cursor_position; i++) {
+      if (buffer[i] == '\n') {
+        cursor_row++;
+      }
+    }
+  } else if (new_position < cursor_position) {
+    for (int i = cursor_position; i > new_cursor_position; i--) {
+      if (buffer[i] == '\n') {
+        cursor_row--;
+      }
+    }
+  }
+
   cursor_position = new_cursor_position;
 }
 
@@ -27,7 +41,7 @@ int Render_Cursor(SDL_Renderer *renderer, TTF_Font *font, char character, int x,
 
   // Every 500ms, the cursor will blink
   if (SDL_GetTicks64() % 1000 < 500) {
-    background_color = (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF};
+    background_color = (SDL_Color){0x00, 0x00, 0x00, 0x1F};
   } else {
     background_color = (SDL_Color){0x00, 0x00, 0x00, 0xFF};
     color = (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF};

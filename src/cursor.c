@@ -1,10 +1,17 @@
 #include "cursor.h"
+#include "globals.h"
 
 void Move_Cursor(int new_position) {
   int len = strlen(buffer) - 1;
   int new_cursor_position = 0;
 
   new_cursor_position = MAX(0, MIN(len + 1, new_position));
+
+  for (int i = 0; i < new_cursor_position; i++) {
+    if (buffer[i] == '\n' || i == 0) {
+      cursor_left_padding = new_cursor_position - i;
+    }
+  }
 
   cursor_position = new_cursor_position;
 }
@@ -32,5 +39,6 @@ int Render_Cursor(SDL_Renderer *renderer, TTF_Font *font, char character, int x,
 
   Render_Text(renderer, font, character_string, color, background_color, x, y);
 
+  free(character_string);
   return 1;
 }

@@ -10,6 +10,7 @@
 
 extern char *buffer;
 extern int cursor_position;
+extern int cursor_left_padding;
 
 enum Mode {
   MODE_NORMAL,

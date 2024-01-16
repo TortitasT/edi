@@ -38,7 +38,14 @@ void Type_In_Buffer(char key) {
   Move_Cursor(cursor_position + 1);
 }
 
-void Handle_Key(SDL_KeyboardEvent *key) {
+void Handle_Key_Down(SDL_KeyboardEvent *key) {
+  switch (key->keysym.sym) {
+  default:
+    break;
+  }
+}
+
+void Handle_Key_Up(SDL_KeyboardEvent *key) {
   switch (key->keysym.sym) {
   case SDLK_ESCAPE:
     mode = MODE_NORMAL;
@@ -87,29 +94,43 @@ void Handle_Key(SDL_KeyboardEvent *key) {
       break;
     }
 
-    int last_newline_position = 0;
-    int last_line_length = 0;
-    int steps_since_last_newline = 0;
-    for (int i = 0; i < (int)strlen(buffer); i++) {
-      if (buffer[i] == '\n') {
-        last_newline_position = i;
-        last_line_length = steps_since_last_newline;
-        steps_since_last_newline = 0;
+    // Left pad is the number of characters from the beginning of the current
+    // line to the cursor position.
+    int counting_left_pad = 1;
+    int left_pad = 0;
+
+    int current_line_length = 0;
+
+    // For each character in the buffer, starting from the cursor position and
+    // going up.
+    for (int i = cursor_position; i >= 0; i--) {
+      // If we encounter a newline, stop counting the left pad
+      if (buffer[i] == '\n' && counting_left_pad) {
+        counting_left_pad = 0;
         continue;
       }
 
-      steps_since_last_newline++;
-
-      if (i == cursor_position) {
-        if (last_line_length - steps_since_last_newline < 0) {
-          Move_Cursor(last_newline_position - 1);
+      // If we encounter a newline or the start of the buffer and we are not
+      // counting the left pad, move to the same column.
+      if ((buffer[i] == '\n' || i == 0) && !counting_left_pad) {
+        // If the left pad is greater than the current line length, move to the
+        // end of the line.
+        if (left_pad > current_line_length) {
+          Move_Cursor(i + current_line_length + 1);
           break;
         }
-
-        Move_Cursor(last_newline_position - last_line_length +
-                    steps_since_last_newline - 1);
+        Move_Cursor(i + left_pad);
         break;
       }
+
+      // If we are counting the left pad, increment the left pad.
+      if (counting_left_pad) {
+        left_pad++;
+        continue;
+      }
+
+      // If we are not counting the left pad, increment the current line length.
+      current_line_length++;
     }
     break;
   }
@@ -119,24 +140,23 @@ void Handle_Key(SDL_KeyboardEvent *key) {
       break;
     }
 
-    int steps_since_last_newline = 0;
-    int line_cursor_position = 0;
-    for (int i = 0; i < (int)strlen(buffer); i++) {
+    // For each character in the buffer, starting from the cursor position and
+    // going down.
+    for (int i = cursor_position; i < (int)strlen(buffer); i++) {
       if (buffer[i] == '\n') {
-        if (i > cursor_position) {
-          Move_Cursor(i + line_cursor_position + 1);
-          break;
+        // If we encounter a newline before reaching the wanted position
+        // move to that newline.
+        for (int j = i + 1; j < i + cursor_left_padding; j++) {
+          if (buffer[j] == '\n') {
+            Move_Cursor(j + 1);
+            break;
+          }
         }
 
-        steps_since_last_newline = 0;
-        continue;
+        // If we encounter a newline, move to the same column.
+        Move_Cursor(i + cursor_left_padding);
+        break;
       }
-
-      if (i == cursor_position) {
-        line_cursor_position = steps_since_last_newline;
-      }
-
-      steps_since_last_newline++;
     }
     break;
   }
@@ -203,10 +223,11 @@ int main(int argc, char *argv[]) {
       }
 
       case SDL_KEYDOWN:
+        Handle_Key_Down(&e.key);
         break;
 
       case SDL_KEYUP:
-        Handle_Key(&e.key);
+        Handle_Key_Up(&e.key);
         break;
 
       case SDL_QUIT:

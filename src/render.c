@@ -66,6 +66,13 @@ int Render_Buffer(SDL_Renderer *renderer, TTF_Font *font,
                     line_number * CHAR_HEIGHT);
       current_line = "";
       line_column++;
+
+      // If we are at a newline advance the
+      // line number and reset the column
+      if (current_character == '\n') {
+        line_number++;
+        line_column = 0;
+      }
       continue;
     }
 
@@ -130,5 +137,6 @@ int Render_Status_Bar(SDL_Renderer *renderer, TTF_Font *font) {
   Render_Text(renderer, font, status_bar_text, text_color,
               text_background_color, 0, SCREEN_HEIGHT - CHAR_HEIGHT);
 
+  free(status_bar_text);
   return 1;
 }

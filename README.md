@@ -61,3 +61,4 @@ sudo pacman -S cmake sdl2 sdl2_ttf
 
 - https://github.com/aminosbh/sdl2-ttf-sample
 - https://cmake.org/cmake/help/v3.16/guide/tutorial/index.html
+- https://discourse.libsdl.org/t/how-to-implement-a-ttf-font-file-in-c-source-code-or-binary-executable-file/9914

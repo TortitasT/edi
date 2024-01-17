@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "cursor.h"
+#include "font.h"
 #include "globals.h"
 #include "macros.h"
 #include "render.h"
@@ -237,11 +238,13 @@ int main(int argc, char *argv[]) {
     Panic(1, "Renderer could not be created!\nSDL_Error: %s\n", SDL_GetError());
   }
 
-  TTF_Font *font = TTF_OpenFont(FONT_PATH, CHAR_HEIGHT);
-  if (!font) {
-    Panic(1, "Unable to load font: '%s'!\nTTF_Error: %s\n", FONT_PATH,
-          TTF_GetError());
-  }
+  // TTF_Font *font = TTF_OpenFont(FONT_PATH, CHAR_HEIGHT);
+  // if (!font) {
+  //   Panic(1, "Unable to load font: '%s'!\nTTF_Error: %s\n", FONT_PATH,
+  //         TTF_GetError());
+  // }
+  SDL_RWops *rw = SDL_RWFromMem(FONT_DATA, sizeof(FONT_DATA));
+  TTF_Font *font = TTF_OpenFontRW(rw, 1, CHAR_HEIGHT);
 
   SDL_StartTextInput();
 

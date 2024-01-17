@@ -26,7 +26,7 @@ fi
 
 if [ "$1" == "run" ]; then
     compile
-    ./build/edi
+    ./build/edi $2
     exit 0
 fi
 

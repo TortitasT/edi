@@ -32,6 +32,9 @@
 - [x] MEMORY LEAKS, arch crashes when I leave it running for a while :(
 - [ ] When going up to the first line or down from the first line the jump will
       be 1 character off
+- [ ] When readme is opened you can go one character past the beginning of the
+      first line
+- [x] CHAR_HEIGHT is not accurate, it is too small
 
 ### Optimizations
 

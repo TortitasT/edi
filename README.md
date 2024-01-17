@@ -42,13 +42,19 @@
 To run the program
 
 ```bash
-./run.sh
+./run.sh run
 ```
 
 To run the program with valgrind
 
 ```bash
-./valgrind.sh
+./run.sh valgrind
+```
+
+To run the program with gdb
+
+```bash
+./run.sh debug
 ```
 
 ## Dependencies

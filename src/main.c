@@ -41,6 +41,25 @@ void Type_In_Buffer(char key) {
   Move_Cursor(cursor_position + 1);
 }
 
+int Load_File(char *path) {
+  FILE *file = fopen(path, "r");
+  if (!file) {
+    return -1;
+  }
+
+  // Get the size of the file
+  fseek(file, 0, SEEK_END);
+  int file_size = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  buffer = realloc(buffer, (file_size + 1) * sizeof(char));
+  fread(buffer, sizeof(char), file_size, file);
+  buffer[file_size] = '\0';
+
+  fclose(file);
+  return 0;
+}
+
 void Handle_Key_Down(SDL_KeyboardEvent *key, bool *quit) {
   switch (key->keysym.sym) {
   case SDLK_q: {
@@ -150,6 +169,8 @@ void Handle_Key_Down(SDL_KeyboardEvent *key, bool *quit) {
 }
 
 void Handle_Key_Up(SDL_KeyboardEvent *key, bool *quit) {
+  (void)quit;
+
   switch (key->keysym.sym) {
   case SDLK_ESCAPE:
     mode = MODE_NORMAL;
@@ -180,11 +201,14 @@ void Handle_Key_Up(SDL_KeyboardEvent *key, bool *quit) {
 }
 
 int main(int argc, char *argv[]) {
-  (void)argc;
-  (void)argv;
-
   if (Init_Globals() < 0) {
     Panic(1, "Could not initialize globals!\n");
+  }
+
+  if (argc > 1) {
+    if (Load_File(argv[1]) < 0) {
+      Panic(1, "Could not load file: '%s'!\n", argv[1]);
+    }
   }
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {

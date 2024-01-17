@@ -42,13 +42,19 @@
 To run the program
 
 ```bash
-./run.sh
+./run.sh run
 ```
 
 To run the program with valgrind
 
 ```bash
-./valgrind.sh
+./run.sh valgrind
+```
+
+To run the program with gdb
+
+```bash
+./run.sh debug
 ```
 
 ## Dependencies
@@ -61,3 +67,4 @@ sudo pacman -S cmake sdl2 sdl2_ttf
 
 - https://github.com/aminosbh/sdl2-ttf-sample
 - https://cmake.org/cmake/help/v3.16/guide/tutorial/index.html
+- https://discourse.libsdl.org/t/how-to-implement-a-ttf-font-file-in-c-source-code-or-binary-executable-file/9914
